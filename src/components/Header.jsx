@@ -9,9 +9,9 @@ function Header() {
 
   return (
     <div className="bg-white shadow sticky top-0 z-50">
-      <header className="flex justify-between items-center px-3 max-w-6xl mx-auto">
+      <header className="flex justify-between items-center px-3 max-w-6xl mx-auto sm:flex-col sm:items-center">
         <img
-          className="h-5 cursor-pointer"
+          className="h-5 cursor-pointer sm:mt-3 relative bottom-[3px]"
           src="https://static.rdc.moveaws.com/images/logos/rdc-logo-default.svg"
           alt=""
           onClick={()=>navigate('/')}
