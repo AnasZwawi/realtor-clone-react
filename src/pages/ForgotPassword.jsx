@@ -1,9 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { BsFillEyeFill } from "react-icons/bs";
-import { BsFillEyeSlashFill } from "react-icons/bs";
 import { useNavigate } from "react-router";
-import SignUp from "./SignUp";
 import OAuth from "../components/OAuth";
 
 function ForgotPassword() {

@@ -1,5 +1,4 @@
 import React from 'react'
-import { FcGoogle } from "react-icons/fc";
 import google from '../assets/google.png'
 
 function OAuth() {

@@ -3,8 +3,11 @@ import { useState } from "react";
 import { BsFillEyeFill } from "react-icons/bs";
 import { BsFillEyeSlashFill } from "react-icons/bs";
 import { useNavigate } from "react-router";
-import SignIn from "./SignIn";
 import OAuth from "../components/OAuth";
+import {getAuth, createUserWithEmailAndPassword, updateProfile} from 'firebase/auth'
+import  { db } from '../firebase'
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { toast } from "react-toastify";
 
 function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,6 +27,31 @@ function SignUp() {
 
   const navigate = useNavigate();
 
+  const submitHandler = async (e) =>{
+    e.preventDefault();
+    try {
+      // signing up user in firebase authentication
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // adding username with updateProfile
+      updateProfile(auth.currentUser, {
+        displayName: name,
+      })
+      const user = userCredential.user;
+
+      //store fine user data in firestore
+      const formDataCopy = {...formData}
+      delete formDataCopy.password
+      formDataCopy.timestamp = serverTimestamp()
+      await setDoc(doc(db, 'users', user.uid), formDataCopy)
+      navigate('/')
+      toast.success('Signed up successfully')
+    } catch (error) {
+      toast.error("An error occurred, can't sign up")
+    }
+  }
+  
+
   return (
     <section className="max-w-6xl mx-auto">
       <h1 className="text-3xl mt-6 text-center text-gray-700 font-[900]">
@@ -36,7 +64,7 @@ function SignUp() {
             alt="key"
           />
         </div>
-        <form className="w-[50%] sm:w-[95%] md:w-[82%] lg:w-[64%] flex flex-col lg:mt-8 space-y-5 ">
+        <form onSubmit={submitHandler} className="w-[50%] sm:w-[95%] md:w-[82%] lg:w-[64%] flex flex-col lg:mt-8 space-y-5 ">
         <div className="w-[87%] lg:w-full ml-auto">
             <input
               className="w-full rounded transition ease-in-out text-gray-700 font-normal text-lg border-gray-300"
