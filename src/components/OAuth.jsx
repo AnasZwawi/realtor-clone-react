@@ -16,7 +16,7 @@ function OAuth() {
   const navigate = useNavigate();
   const onGoogleClick = async () => {
     try {
-      // sign up with google pop up
+      // setting up google pop up
       const auth = getAuth();
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
@@ -32,9 +32,14 @@ function OAuth() {
           email: user.email,
           timestamp: serverTimestamp(),
         });
+        navigate("/");
+        toast.success("Signed up successfully!");
       }
-      navigate("/");
-      toast.success("Signed up successfully!");
+      else{
+        navigate("/");
+        toast.info('User already exists')
+      }
+      
     } catch (error) {
       console.log(error);
       toast.error("Could not authorize with google!");
