@@ -45,9 +45,9 @@ function SignUp() {
       formDataCopy.timestamp = serverTimestamp()
       await setDoc(doc(db, 'users', user.uid), formDataCopy)
       navigate('/')
-      toast.success('Signed up successfully')
+      toast.success('Signed up successfully.')
     } catch (error) {
-      toast.error("An error occurred, can't sign up")
+      toast.error("An error occurred, can't sign up.")
     }
   }
   
