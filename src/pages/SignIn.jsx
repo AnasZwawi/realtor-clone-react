@@ -31,7 +31,7 @@ function SignIn() {
       const auth = getAuth();
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       if(userCredential.user){
-        navigate('/');
+        navigate('/profile');
         toast.success('Signing In Successfully!');
       }
 
@@ -88,7 +88,7 @@ function SignIn() {
               />
             )}
           </div>
-          <div className="w-[87%] lg:w-full sm:flex-col sm:items-center ml-auto flex flex-row justify-between sm:space-y-2">
+          <div className="w-[87%] lg:w-full sm:flex-col sm:items-center ml-auto flex flex-row justify-between sm:space-y-2 text-[16px]">
             <p className="font-normal text-gray-700">Don't have an account? <a onClick={()=>navigate('/sign-up')} className="text-red-500 cursor-pointer">Register Now</a></p>
             <p className="text-blue-500 w-fit font-normal cursor-pointer" onClick={()=>navigate('/forgot-password')}>Forgot Password?</p>
           </div>

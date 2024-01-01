@@ -32,12 +32,11 @@ function OAuth() {
           email: user.email,
           timestamp: serverTimestamp(),
         });
-        navigate("/");
-        toast.success("Signed up successfully!");
+        navigate("/profile");
       }
       else{
-        navigate("/");
-        toast.info('User already exists')
+        navigate("/profile");
+        toast.info('Connected');
       }
       
     } catch (error) {

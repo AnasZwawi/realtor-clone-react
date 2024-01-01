@@ -44,7 +44,7 @@ function SignUp() {
       delete formDataCopy.password
       formDataCopy.timestamp = serverTimestamp()
       await setDoc(doc(db, 'users', user.uid), formDataCopy)
-      navigate('/')
+      navigate('/profile')
       toast.success('Signed up successfully!')
     } catch (error) {
       toast.error("An error occurred, can't sign up!")
@@ -110,7 +110,7 @@ function SignUp() {
               />
             )}
           </div>
-          <div className="w-[87%] lg:w-full sm:flex-col sm:items-center ml-auto flex flex-row justify-between sm:space-y-2">
+          <div className="w-[87%]  text-[16px] lg:w-full sm:flex-col sm:items-center ml-auto flex flex-row justify-between sm:space-y-2">
             <p className="font-normal text-gray-700">Have an account? <a onClick={()=>navigate('/sign-in')} className="text-red-500 cursor-pointer">Sign in</a></p>
             <p className="text-blue-500 w-fit font-normal cursor-pointer" onClick={()=>navigate('/forgot-password')}>Forgot Password?</p>
           </div>
