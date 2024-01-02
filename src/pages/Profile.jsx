@@ -26,7 +26,7 @@ function Profile() {
           <form className=''>
             <input className='w-[100%] border-gray-400 text-gray-700 px-4 py-2 rounded transition ease-in-out' type="text" id='name' disabled value={name}/>
 
-            <input className='w-[100%] border-gray-400 text-gray-700 mt-4 mb-6 px-4 py-2 rounded transition ease-in-out' type="text" id='name' disabled value={email}/>
+            <input className='w-[100%] border-gray-400 text-gray-700 mt-4 mb-6 px-4 py-2 rounded transition ease-in-out' type="email" id='email' disabled value={email}/>
             
             <div className="w-[100%] lg:w-full ml-auto flex flex-row justify-between text-[16px]">
               <p className="font-normal text-gray-700"><a className="text-red-500 cursor-pointer">Edit your name </a></p>

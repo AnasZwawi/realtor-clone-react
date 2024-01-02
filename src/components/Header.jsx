@@ -1,11 +1,36 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import styles from "../styles/Header.module.css";
+import { getAuth, onAuthStateChanged } from "firebase/auth"
 
 function Header() {
-
+  const [pageState, setPageState] = useState("Sign in")
   const location = useLocation();
   const navigate = useNavigate();
+  const auth = getAuth();
+  useEffect(()=>{
+    onAuthStateChanged(auth, (user)=>{
+      if(user){
+        setPageState("Profile")
+      }
+      else{
+        setPageState("Sign in")
+      }
+    })
+  },[auth])
+  const pathMatchRoute = (route)=>{
+    if(route === location.pathname){
+      return true;
+    }
+  }
+  function toNav(){
+    if(pageState === 'Profile'){
+      navigate('/profile')
+    }
+    else{
+      navigate('/sign-in')
+    }
+  }
 
   return (
     <div className="bg-white shadow sticky top-0 z-50">
@@ -39,14 +64,12 @@ function Header() {
               Offers
             </li>
             <li
-              className={`cursor-pointer select-none py-3 text-sm font-semibold text-gray-400 border-b-[3px]  ${
-                location.pathname === "/sign-in"
-                  ? "border-b-red-500 text-black"
-                  : "border-b-transparent"
+              className={`cursor-pointer select-none py-3 text-sm font-semibold border-transparent text-gray-400 border-b-[3px]  ${
+                (pathMatchRoute("/sign-in") || pathMatchRoute("/profile")) && "border-b-red-500 text-black"
               }`}
-              onClick={()=>navigate('/sign-in')}
+              onClick={toNav}
             >
-              Sign In
+            {pageState}
             </li>
           </ul>
         </div>
