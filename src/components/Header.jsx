@@ -44,9 +44,9 @@ function Header() {
         <div>
           <ul className="flex space-x-10">
             <li
-              className={`cursor-pointer select-none py-3 text-sm font-semibold text-gray-400 border-b-[3px]  ${
+              className={`cursor-pointer select-none py-3 text-[16px] pt-[0.8rem] font-semibold text-gray-400 border-b-[3px]  ${
                 location.pathname === "/"
-                  ? "border-b-red-500 text-black"
+                  ? "border-b-red-500 text-gray-600"
                   : "border-b-transparent"
               }`}
               onClick={()=>navigate('/')}
@@ -54,9 +54,9 @@ function Header() {
               Home
             </li>
             <li
-              className={`cursor-pointer select-none py-3 text-sm font-semibold text-gray-400 border-b-[3px]  ${
+              className={`cursor-pointer select-none py-3 text-[16px] pt-[0.8rem] font-semibold text-gray-400 border-b-[3px]  ${
                 location.pathname === "/offers"
-                  ? "border-b-red-500 text-black"
+                  ? "border-b-red-500 text-gray-600"
                   : "border-b-transparent" 
               }`}
               onClick={()=>navigate('/offers')}
@@ -64,8 +64,8 @@ function Header() {
               Offers
             </li>
             <li
-              className={`cursor-pointer select-none py-3 text-sm font-semibold border-transparent text-gray-400 border-b-[3px]  ${
-                (pathMatchRoute("/sign-in") || pathMatchRoute("/profile")) && "border-b-red-500 text-black"
+              className={`cursor-pointer select-none py-3 text-[16px] pt-[0.8rem] font-semibold border-transparent text-gray-400 border-b-[3px]  ${
+                (pathMatchRoute("/sign-in") || pathMatchRoute("/profile")) && "border-b-red-500 text-gray-600"
               }`}
               onClick={toNav}
             >
