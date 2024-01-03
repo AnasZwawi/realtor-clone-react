@@ -27,11 +27,13 @@ function App() {
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/offers" element={<Offers />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/create-listing" element={<CreateListing />} />
+          <Route path="/create-listing" element={<PrivateRoute />}>
+            <Route path="/create-listing" element={<CreateListing />} />
+          </Route>
         </Routes>
       </Router>
       <ToastContainer
-        position="top-right"
+        position="bottom-center"
         autoClose={5000}
         hideProgressBar={false}
         newestOnTop={false}

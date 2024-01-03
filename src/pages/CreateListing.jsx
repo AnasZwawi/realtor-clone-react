@@ -1,6 +1,10 @@
 import React, { useState } from "react";
+import Spinner from "../components/Spinner"
+import { toast } from "react-toastify";
 
 function CreateListing() {
+  const [geolocationEnabled, setGeolocationEnabled] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     type: "rent",
     name: "",
@@ -11,8 +15,12 @@ function CreateListing() {
     address: '',
     description: '',
     offer: false,
+    cost: false,
     regularPrice: 0,
     discountedPrice: 0,
+    latitude: 0,
+    longitude: 0,
+    images: {},
   });
 
   const {
@@ -27,10 +35,13 @@ function CreateListing() {
     offer,
     regularPrice,
     discountedPrice,
+    latitude,
+    longitude,
+    cost,
+    images,
   } = formData;
 
   function onChangeHandler(event) {
-    console.log(event.target.value);
     let boolean = null;
     if (event.target.value === "true") {
       boolean = true;
@@ -52,12 +63,30 @@ function CreateListing() {
     }
   }
 
+  const onSubmitHandler = (e) => {
+    e.preventDefault();
+    setLoading(true)
+    if(discountedPrice >= regularPrice){
+      setLoading(false)
+      toast.warning("Discounted price must be less than the regular price!")
+      return
+    }
+    if(images.length>6){
+      setLoading(false)
+      toast.warning("Maximum 6 images are allowed")
+      return
+    }
+  }
+  if(loading){
+    return <Spinner/>
+  }
+
   return (
     <main className="max-w-md px-2 mx-auto">
       <h1 className="text-3xl mt-6 font-bold text-center text-gray-800">
         Create a Listing
       </h1>
-      <form action="" className="mx-1">
+      <form onSubmit={onSubmitHandler} className="mx-1">
         <p className="text-lg mt-6 font-semibold text-gray-800">Sell / Rent</p>
         <div className="flex space-x-5">
           <button
@@ -189,6 +218,18 @@ function CreateListing() {
           onChange={onChangeHandler}
           required
         />
+        {geolocationEnabled && (
+          <div className="flex space-x-5">
+            <div>
+              <p className="text-lg mt-5 font-semibold text-gray-800">Latitude</p>
+              <input type="number" name="latitude" id="latitude" value={latitude} onChange={onChangeHandler}  className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"/>
+            </div>
+            <div>
+            <p className="text-lg mt-5 font-semibold text-gray-800">Longitude</p>
+              <input type="number" name="longitude" id="longitude" value={longitude} onChange={onChangeHandler}  className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"/>
+            </div>
+          </div>
+        )}
         <p className="text-lg mt-6 font-semibold text-gray-800">Description</p>
         <textarea
           type="text"
@@ -224,39 +265,72 @@ function CreateListing() {
             No
           </button>
         </div>
+        <p className="text-lg mt-6 font-semibold text-gray-800">Cost for</p>
+        <div className="flex space-x-5">
+          <button
+            onClick={onChangeHandler}
+            type="button"
+            id="cost"
+            value={true}
+            className={`px-7 py-3 font-semibold text-sm uppercase shadow-md rounded hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-150 ease-in-out w-full ${
+              !cost ? "bg-white text-gray-700" : "bg-slate-600 text-white"
+            }`}
+          >
+            Month
+          </button>
+          <button
+            onClick={onChangeHandler}
+            type="button"
+            id="cost"
+            value={false}
+            className={`px-7 py-3 font-semibold text-sm uppercase shadow-md rounded hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-150 ease-in-out w-full ${
+              cost ? "bg-white text-gray-700" : "bg-slate-600 text-white"
+            }`}
+          >
+            Night
+          </button>
+        </div>
         <div className="w-full flex space-x-5">
           <div className="w-full">
             <p className="text-lg mt-6 font-semibold text-gray-800">
-              Regular Price
+              {offer ? "Regular" : ""} Price
               <span className="text-sm mt-6 font-normal text-gray-800">
-                {" "}
-                /Month
-              </span>{" "}
+                {cost ? " /Month":" /Night"}
+              </span>
             </p>
-            <input
-              className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"
-              id="regularPrice"
-              type="number"
-              min="0"
-              value={regularPrice}
-              onChange={onChangeHandler}
-              required
-            />
+            <div className="relative">
+              <p className="absolute z-50 top-3 right-8">TND</p>
+              <input
+                className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"
+                id="regularPrice"
+                type="number"
+                min="0"
+                value={regularPrice}
+                onChange={onChangeHandler}
+                required
+              />
+            </div>
           </div>
-          <div className="w-full">
+          {offer && (<div className="w-full">
             <p className="text-lg mt-6 font-semibold text-gray-800">
-              Discounted Price{" "}
+              Discounted Price
+              <span className="text-sm mt-6 font-normal text-gray-800">
+                {cost ? " /Month":" /Night"}
+              </span>
             </p>
-            <input
-              className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"
-              id="discountedPrice"
-              type="number"
-              min="1"
-              value={discountedPrice}
-              onChange={onChangeHandler}
-              required
-            />
-          </div>
+             <div className="relative">
+             <p className="absolute z-50 top-3 right-8">TND</p>
+              <input
+                className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"
+                id="discountedPrice"
+                type="number"
+                min="1"
+                value={discountedPrice}
+                onChange={onChangeHandler}
+              />
+            </div>
+            
+          </div>)}
         </div>
         <div>
           <p className="text-lg mt-6 font-semibold text-gray-800">Images </p>
