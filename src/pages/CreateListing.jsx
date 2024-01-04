@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import Spinner from "../components/Spinner"
+import Spinner from "../components/Spinner";
 import { toast } from "react-toastify";
 import Location from "../components/Location";
 
 function CreateListing() {
-  const [geolocationEnabled, setGeolocationEnabled] = useState(true)
-  const [loading, setLoading] = useState(false)
-  const [local, setLocal]= useState({})
+  const [geolocationEnabled, setGeolocationEnabled] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [local, setLocal] = useState({});
   const [formData, setFormData] = useState({
     type: "rent",
     name: "",
@@ -14,8 +14,8 @@ function CreateListing() {
     bathrooms: 1,
     parking: false,
     furnished: false,
-    address: '',
-    description: '',
+    address: "",
+    description: "",
     offer: false,
     cost: false,
     regularPrice: 0,
@@ -65,7 +65,7 @@ function CreateListing() {
         [event.target.id]: boolean ?? event.target.value,
       }));
     }
-    if(local){
+    if (local) {
       setFormData((prevState) => ({
         ...prevState,
         location: local,
@@ -75,27 +75,27 @@ function CreateListing() {
 
   const onSubmitHandler = (e) => {
     e.preventDefault();
-    setLoading(true)
-    if(discountedPrice >= regularPrice){
-      setLoading(false)
-      toast.warning("Discounted price must be less than the regular price!")
-      return
+    setLoading(true);
+    if (discountedPrice >= regularPrice) {
+      setLoading(false);
+      toast.warning("Discounted price must be less than the regular price!");
+      return;
     }
-    if(images.length>6){
-      setLoading(false)
-      toast.warning("Maximum 6 images are allowed")
-      return
+    if (images.length > 6) {
+      setLoading(false);
+      toast.warning("Maximum 6 images are allowed");
+      return;
     }
-  }
-  if(loading){
-    return <Spinner/>
+  };
+  if (loading) {
+    return <Spinner />;
   }
 
-  function returnLocation(loc){
-    const lila = loc
-    setLocal(lila)
+  function returnLocation(loc) {
+    const lila = loc;
+    setLocal(lila);
   }
-  
+
   return (
     <main className="max-w-md px-2 mx-auto">
       <h1 className="text-3xl mt-6 font-bold text-center text-gray-800">
@@ -223,7 +223,12 @@ function CreateListing() {
             No
           </button>
         </div>
-        <p className="text-lg mt-6 font-semibold text-gray-800">Address</p>
+
+        <Location returnLocation={returnLocation} />
+        <p className="text-lg mt-6 font-semibold text-gray-800">
+          More Address Details{" "}
+          <span className="text-sm text-gray-500">(optional)</span>{" "}
+        </p>
         <textarea
           type="text"
           className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"
@@ -231,18 +236,34 @@ function CreateListing() {
           placeholder="Address"
           value={address}
           onChange={onChangeHandler}
-          required
         />
-        <Location returnLocation={returnLocation}/>
         {geolocationEnabled && (
           <div className="flex space-x-5">
             <div>
-              <p className="text-lg mt-5 font-semibold text-gray-800">Latitude</p>
-              <input type="number" name="latitude" id="latitude" value={latitude} onChange={onChangeHandler}  className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"/>
+              <p className="text-lg mt-5 font-semibold text-gray-800">
+                Latitude
+              </p>
+              <input
+                type="number"
+                name="latitude"
+                id="latitude"
+                value={latitude}
+                onChange={onChangeHandler}
+                className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"
+              />
             </div>
             <div>
-            <p className="text-lg mt-5 font-semibold text-gray-800">Longitude</p>
-              <input type="number" name="longitude" id="longitude" value={longitude} onChange={onChangeHandler}  className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"/>
+              <p className="text-lg mt-5 font-semibold text-gray-800">
+                Longitude
+              </p>
+              <input
+                type="number"
+                name="longitude"
+                id="longitude"
+                value={longitude}
+                onChange={onChangeHandler}
+                className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"
+              />
             </div>
           </div>
         )}
@@ -281,38 +302,45 @@ function CreateListing() {
             No
           </button>
         </div>
-        <p className="text-lg mt-6 font-semibold text-gray-800">Cost for</p>
-        <div className="flex space-x-5">
-          <button
-            onClick={onChangeHandler}
-            type="button"
-            id="cost"
-            value={true}
-            className={`px-7 py-3 font-semibold text-sm uppercase shadow-md rounded hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-150 ease-in-out w-full ${
-              !cost ? "bg-white text-gray-700" : "bg-slate-600 text-white"
-            }`}
-          >
-            Month
-          </button>
-          <button
-            onClick={onChangeHandler}
-            type="button"
-            id="cost"
-            value={false}
-            className={`px-7 py-3 font-semibold text-sm uppercase shadow-md rounded hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-150 ease-in-out w-full ${
-              cost ? "bg-white text-gray-700" : "bg-slate-600 text-white"
-            }`}
-          >
-            Night
-          </button>
-        </div>
+        {type === "rent" && (
+          <>
+            <p className="text-lg mt-6 font-semibold text-gray-800">Cost for</p>
+            <div className="flex space-x-5">
+              <button
+                onClick={onChangeHandler}
+                type="button"
+                id="cost"
+                value={true}
+                className={`px-7 py-3 font-semibold text-sm uppercase shadow-md rounded hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-150 ease-in-out w-full ${
+                  !cost ? "bg-white text-gray-700" : "bg-slate-600 text-white"
+                }`}
+              >
+                Month
+              </button>
+              <button
+                onClick={onChangeHandler}
+                type="button"
+                id="cost"
+                value={false}
+                className={`px-7 py-3 font-semibold text-sm uppercase shadow-md rounded hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-150 ease-in-out w-full ${
+                  cost ? "bg-white text-gray-700" : "bg-slate-600 text-white"
+                }`}
+              >
+                Night
+              </button>
+            </div>
+          </>
+        )}
+
         <div className="w-full flex space-x-5">
           <div className="w-full">
             <p className="text-lg mt-6 font-semibold text-gray-800">
-              {offer ? "Regular" : ""} Price
-              <span className="text-sm mt-6 font-normal text-gray-800">
-                {cost ? " /Month":" /Night"}
-              </span>
+              {offer ? "Regular" : ""} Price{" "}
+              {type === "rent" && (
+                <span className="text-sm mt-6 font-normal text-gray-800">
+                  {cost ? " /Month" : " /Night"}
+                </span>
+              )}
             </p>
             <div className="relative">
               <p className="absolute z-50 top-3 right-8">TND</p>
@@ -327,26 +355,27 @@ function CreateListing() {
               />
             </div>
           </div>
-          {offer && (<div className="w-full">
-            <p className="text-lg mt-6 font-semibold text-gray-800">
-              Discounted Price
-              <span className="text-sm mt-6 font-normal text-gray-800">
-                {cost ? " /Month":" /Night"}
-              </span>
-            </p>
-             <div className="relative">
-             <p className="absolute z-50 top-3 right-8">TND</p>
-              <input
-                className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"
-                id="discountedPrice"
-                type="number"
-                min="1"
-                value={discountedPrice}
-                onChange={onChangeHandler}
-              />
+          {offer && (
+            <div className="w-full">
+              <p className="text-lg mt-6 font-semibold text-gray-800">
+                Discounted Price
+                <span className="text-sm mt-6 font-normal text-gray-800">
+                  {cost ? " /Month" : " /Night"}
+                </span>
+              </p>
+              <div className="relative">
+                <p className="absolute z-50 top-3 right-8">TND</p>
+                <input
+                  className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"
+                  id="discountedPrice"
+                  type="number"
+                  min="1"
+                  value={discountedPrice}
+                  onChange={onChangeHandler}
+                />
+              </div>
             </div>
-            
-          </div>)}
+          )}
         </div>
         <div>
           <p className="text-lg mt-6 font-semibold text-gray-800">Images </p>
@@ -366,8 +395,8 @@ function CreateListing() {
         <button
           type="submit"
           className="w-full mt-6 mb-10 text-white bg-blue-600 p-[12px] text-[15px] font-medium rounded hover:bg-blue-700 transition duration-150 ease-in-out active:bg-blue-900 shadow-md hover:shadow-lg"
-          onClick={()=>{
-            console.log(formData)
+          onClick={() => {
+            console.log(formData);
           }}
         >
           CREATE LISTING
