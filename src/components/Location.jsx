@@ -1,33 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select'
+import data from '../data/tn.json'
+import getCities from '../functions/getCities';
+import Cities from './Cities';
 
-const Location = ({ inputArray }) => {
-  const [uniqueNames, setUniqueNames] = useState([]);
 
-  // Function to get unique names from an array of objects
-  const getUniqueNames = (arr) => {
-    const uniqueNamesSet = new Set();
-    const uniqueNamesArray = [];
+const Location = (props) => {
+  const [search, setSearch] = useState(false)
+  const [option, setOption] = useState('')
+  
+  const uniqueNames = getCities(data)
 
-    arr.forEach(obj => {
-      if (obj && obj.admin_name && !uniqueNamesSet.has(obj.admin_name)) {
-        uniqueNamesSet.add(obj.admin_name);
-        uniqueNamesArray.push({ value: obj.admin_name, label: obj.admin_name });
-      }
-    });
-    return uniqueNamesArray;
+  function searchTerm(opt){
+    setOption(opt)
+    setSearch(true)
   }
 
-  // Set unique names when the component mounts or when inputArray changes
-  useEffect(() => {
-    const names = getUniqueNames(inputArray);
-    setUniqueNames(names);
-  }, [inputArray]);
-  
+
   return (
-    <div>
-      <h1>Unique Names List</h1>
-      <Select options={uniqueNames} />
+    <div className='mt-6'>
+      <h1 className="text-lg mt-6 font-semibold text-gray-800">Choose the State</h1>
+      <Select options={uniqueNames} onChange={searchTerm} className='text-lg'/>
+      {search && <Cities option={option} returnLocation={props.returnLocation}/>}
     </div>
   );
 }

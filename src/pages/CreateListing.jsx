@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import Spinner from "../components/Spinner"
 import { toast } from "react-toastify";
+import Location from "../components/Location";
 
 function CreateListing() {
   const [geolocationEnabled, setGeolocationEnabled] = useState(true)
   const [loading, setLoading] = useState(false)
+  const [local, setLocal]= useState({})
   const [formData, setFormData] = useState({
     type: "rent",
     name: "",
@@ -21,6 +23,7 @@ function CreateListing() {
     latitude: 0,
     longitude: 0,
     images: {},
+    location: {},
   });
 
   const {
@@ -39,6 +42,7 @@ function CreateListing() {
     longitude,
     cost,
     images,
+    location,
   } = formData;
 
   function onChangeHandler(event) {
@@ -61,6 +65,12 @@ function CreateListing() {
         [event.target.id]: boolean ?? event.target.value,
       }));
     }
+    if(local){
+      setFormData((prevState) => ({
+        ...prevState,
+        location: local,
+      }));
+    }
   }
 
   const onSubmitHandler = (e) => {
@@ -81,6 +91,11 @@ function CreateListing() {
     return <Spinner/>
   }
 
+  function returnLocation(loc){
+    const lila = loc
+    setLocal(lila)
+  }
+  
   return (
     <main className="max-w-md px-2 mx-auto">
       <h1 className="text-3xl mt-6 font-bold text-center text-gray-800">
@@ -218,6 +233,7 @@ function CreateListing() {
           onChange={onChangeHandler}
           required
         />
+        <Location returnLocation={returnLocation}/>
         {geolocationEnabled && (
           <div className="flex space-x-5">
             <div>
@@ -350,6 +366,9 @@ function CreateListing() {
         <button
           type="submit"
           className="w-full mt-6 mb-10 text-white bg-blue-600 p-[12px] text-[15px] font-medium rounded hover:bg-blue-700 transition duration-150 ease-in-out active:bg-blue-900 shadow-md hover:shadow-lg"
+          onClick={()=>{
+            console.log(formData)
+          }}
         >
           CREATE LISTING
         </button>
