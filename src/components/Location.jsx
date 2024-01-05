@@ -19,6 +19,7 @@ const Location = (props) => {
     <div className="mt-6 mb-1">
       <h1 className="text-lg font-semibold text-gray-800">Choose the State</h1>
       <Select
+        required
         options={uniqueNames}
         onChange={searchTerm}
         isSearchable={false}

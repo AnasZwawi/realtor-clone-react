@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import Spinner from "../components/Spinner";
 import { toast } from "react-toastify";
 import Location from "../components/Location";
-
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getAuth } from 'firebase/auth';
+import { v4 as uuidv4 } from "uuid";
 function CreateListing() {
+  const auth = getAuth();
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [local, setLocal] = useState({});
@@ -65,6 +68,12 @@ function CreateListing() {
         [event.target.id]: boolean ?? event.target.value,
       }));
     }
+    if(event.target.type === "number"){
+      setFormData((prevState) => ({
+        ...prevState,
+        [event.target.id]: event.target.valueAsNumber,
+      }));
+    }
     if (local) {
       setFormData((prevState) => ({
         ...prevState,
@@ -73,12 +82,13 @@ function CreateListing() {
     }
   }
 
-  const onSubmitHandler = (e) => {
+  const onSubmitHandler = async(e) => {
     e.preventDefault();
     setLoading(true);
     if (discountedPrice >= regularPrice) {
       setLoading(false);
       toast.warning("Discounted price must be less than the regular price!");
+      console.log(typeof discountedPrice)
       return;
     }
     if (images.length > 6) {
@@ -86,6 +96,60 @@ function CreateListing() {
       toast.warning("Maximum 6 images are allowed");
       return;
     }
+
+    async function storeImage(image){
+      return new Promise((resolve, reject)=>{
+        const storage = getStorage();
+        const filename = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`
+        const storageRef = ref(storage, filename);
+        
+        const uploadTask = uploadBytesResumable(storageRef, image);
+        
+        // Register three observers:
+        // 1. 'state_changed' observer, called any time the state changes
+        // 2. Error observer, called on failure
+        // 3. Completion observer, called on successful completion
+        uploadTask.on('state_changed', 
+          (snapshot) => {
+            // Observe state change events such as progress, pause, and resume
+            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log('Upload is ' + progress + '% done');
+            switch (snapshot.state) {
+              case 'paused':
+                console.log('Upload is paused');
+                break;
+              case 'running':
+                console.log('Upload is running');
+                break;
+            }
+          }, 
+          (error) => {
+            // Handle unsuccessful uploads
+            reject(error)
+          }, 
+          () => {
+            // Handle successful uploads on complete
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+              resolve(downloadURL);
+            });
+          }
+        );
+      })
+      
+    }
+
+    const imgUrls = await Promise.all(
+      [...images].map((image) => {
+        return storeImage(image)
+      }
+      )
+    ).catch((error) => {
+      setLoading(false);
+      toast.error("Can't updload images!");
+      return;
+    })
+    console.log(imgUrls)
   };
   if (loading) {
     return <Spinner />;
@@ -162,9 +226,9 @@ function CreateListing() {
               Bathrooms
             </p>
             <input
+              type="number"
               className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"
               id="bathrooms"
-              type="number"
               min="1"
               max="50"
               value={bathrooms}
@@ -359,9 +423,11 @@ function CreateListing() {
             <div className="w-full">
               <p className="text-lg mt-6 font-semibold text-gray-800">
                 Discounted Price
+                {type === "rent" && (
                 <span className="text-sm mt-6 font-normal text-gray-800">
                   {cost ? " /Month" : " /Night"}
                 </span>
+              )}
               </p>
               <div className="relative">
                 <p className="absolute z-50 top-3 right-8">TND</p>
