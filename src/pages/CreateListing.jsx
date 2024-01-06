@@ -113,7 +113,7 @@ function CreateListing() {
             // Observe state change events such as progress, pause, and resume
             // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            console.log('Upload is ' + progress + '% done');
+            console.log('Upload is ' + progress.toFixed(0) + '% done');
             switch (snapshot.state) {
               case 'paused':
                 console.log('Upload is paused');
@@ -153,7 +153,8 @@ function CreateListing() {
       ...formData,
       imgUrls,
       timestamp: serverTimestamp(),
-      houseLocation : location[0]
+      houseLocation : location[0],
+      userRef: auth.currentUser.uid,
     }
     delete formDataCopy.images
     delete formDataCopy.location

@@ -1,15 +1,23 @@
 import { getAuth, updateProfile } from "firebase/auth";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { db } from "../firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { FcHome } from "react-icons/fc";
-
+import ListingItem from "../components/ListingItem";
 
 function Profile() {
   const auth = getAuth();
-
+  const [listings, setListings] = useState(null);
   const [changeDetail, setChangeDetail] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -26,28 +34,47 @@ function Profile() {
     navigate("/");
   };
 
-  const onChangeHandler = (event)=>{
-    setFormData((prevState)=>(
-      {
-        ...prevState,
-        [event.target.id]: event.target.value,
-      }
-    ))
-  }
+  const onChangeHandler = (event) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [event.target.id]: event.target.value,
+    }));
+  };
 
   async function onSubmitHandler() {
     try {
       //updating user infos
       await updateProfile(auth.currentUser, {
-        displayName :name,
-      })
+        displayName: name,
+      });
       //store new info in firestore
-      await updateDoc(doc(db, 'users', auth.currentUser.uid), formData)
-      toast.success("Profile Details Updated")
+      await updateDoc(doc(db, "users", auth.currentUser.uid), formData);
+      toast.success("Profile Details Updated");
     } catch (error) {
-      toast.error("Can't update profile")
+      toast.error("Can't update profile");
     }
   }
+
+  useEffect(() => {
+    async function fetchUserListings() {
+      const listingRef = collection(db, "listings");
+      const q = query(
+        listingRef,
+        where("userRef", "==", auth.currentUser.uid),
+        orderBy("timestamp", "desc")
+      );
+      const querySnap = await getDocs(q);
+      let listings = [];
+      querySnap.forEach((doc) =>
+        listings.push({
+          id: doc.id,
+          data: doc.data(),
+        })
+      );
+      setListings(listings);
+    }
+    fetchUserListings();
+  }, [auth.currentUser.uid]);
 
   return (
     <>
@@ -77,8 +104,12 @@ function Profile() {
             <div className="w-[100%] lg:w-full ml-auto flex flex-row justify-between text-[16px]">
               <p className="font-normal text-gray-700">
                 <a
-                  className={changeDetail ? "text-green-500 cursor-pointer":"text-red-500 cursor-pointer"}
-                  onClick={()=>{
+                  className={
+                    changeDetail
+                      ? "text-green-500 cursor-pointer"
+                      : "text-red-500 cursor-pointer"
+                  }
+                  onClick={() => {
                     setChangeDetail((prevState) => !prevState);
                     changeDetail && onSubmitHandler();
                   }}
@@ -94,11 +125,38 @@ function Profile() {
               </p>
             </div>
           </form>
-          <button onClick={()=>{
-            navigate('/create-listing')
-          }} className="flex items-center justify-center w-full text-white bg-blue-600 p-[12px] mt-6 text-[15px] font-normal rounded hover:bg-blue-700 transition duration-150 ease-in-out active:bg-blue-900 shadow-lg"> <FcHome className="mr-2 text-[27px] bg-red-200 rounded-full border-2 p-[3px]"/> <p>SELL OR RENT YOUR HOUSE</p></button>
+          <button
+            onClick={() => {
+              navigate("/create-listing");
+            }}
+            className="flex items-center justify-center w-full text-white bg-blue-600 p-[12px] mt-6 text-[15px] font-normal rounded hover:bg-blue-700 transition duration-150 ease-in-out active:bg-blue-900 shadow-lg"
+          >
+            {" "}
+            <FcHome className="mr-2 text-[27px] bg-red-200 rounded-full border-2 p-[3px]" />{" "}
+            <p>SELL OR RENT YOUR HOUSE</p>
+          </button>
         </div>
       </section>
+      <div>
+        {listings && (
+          <>
+            <h1
+              className="mt-[4rem] mb-12 text-3xl font-bold text-center text-gray-800"
+            >
+              My Listings
+            </h1> 
+            <ul>
+              {listings.map((listing) => (
+                <ListingItem
+                  key={listing.id}
+                  id={listing.id}
+                  listing={listing.data}
+                />
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
     </>
   );
 }
