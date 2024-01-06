@@ -5,7 +5,11 @@ import Location from "../components/Location";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { getAuth } from 'firebase/auth';
 import { v4 as uuidv4 } from "uuid";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase";
+import { useNavigate } from "react-router";
 function CreateListing() {
+  const navigate = useNavigate()
   const auth = getAuth();
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -23,8 +27,6 @@ function CreateListing() {
     cost: false,
     regularPrice: 0,
     discountedPrice: 0,
-    latitude: 0,
-    longitude: 0,
     images: {},
     location: {},
   });
@@ -41,8 +43,6 @@ function CreateListing() {
     offer,
     regularPrice,
     discountedPrice,
-    latitude,
-    longitude,
     cost,
     images,
     location,
@@ -88,7 +88,6 @@ function CreateListing() {
     if (discountedPrice >= regularPrice) {
       setLoading(false);
       toast.warning("Discounted price must be less than the regular price!");
-      console.log(typeof discountedPrice)
       return;
     }
     if (images.length > 6) {
@@ -149,8 +148,24 @@ function CreateListing() {
       toast.error("Can't updload images!");
       return;
     })
-    console.log(imgUrls)
+ 
+    const formDataCopy = {
+      ...formData,
+      imgUrls,
+      timestamp: serverTimestamp(),
+      houseLocation : location[0]
+    }
+    delete formDataCopy.images
+    delete formDataCopy.location
+    !formDataCopy.offer && delete formDataCopy.discountedPrice
+    const docRef = await addDoc(collection(db, 'listings'), formDataCopy);
+    setLoading(false)
+    toast.success('Listing Added Successfully')
+    navigate(`/category/${formDataCopy.type}/${docRef.id}`)
   };
+  
+
+
   if (loading) {
     return <Spinner />;
   }
@@ -301,36 +316,6 @@ function CreateListing() {
           value={address}
           onChange={onChangeHandler}
         />
-        {geolocationEnabled && (
-          <div className="flex space-x-5">
-            <div>
-              <p className="text-lg mt-5 font-semibold text-gray-800">
-                Latitude
-              </p>
-              <input
-                type="number"
-                name="latitude"
-                id="latitude"
-                value={latitude}
-                onChange={onChangeHandler}
-                className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"
-              />
-            </div>
-            <div>
-              <p className="text-lg mt-5 font-semibold text-gray-800">
-                Longitude
-              </p>
-              <input
-                type="number"
-                name="longitude"
-                id="longitude"
-                value={longitude}
-                onChange={onChangeHandler}
-                className="w-full rounded transition duration-150 ease-in-out text-gray-700 font-normal text-lg border-gray-300"
-              />
-            </div>
-          </div>
-        )}
         <p className="text-lg mt-6 font-semibold text-gray-800">Description</p>
         <textarea
           type="text"
@@ -461,9 +446,6 @@ function CreateListing() {
         <button
           type="submit"
           className="w-full mt-6 mb-10 text-white bg-blue-600 p-[12px] text-[15px] font-medium rounded hover:bg-blue-700 transition duration-150 ease-in-out active:bg-blue-900 shadow-md hover:shadow-lg"
-          onClick={() => {
-            console.log(formData);
-          }}
         >
           CREATE LISTING
         </button>
