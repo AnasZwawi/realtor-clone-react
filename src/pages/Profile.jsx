@@ -17,7 +17,7 @@ import ListingItem from "../components/ListingItem";
 
 function Profile() {
   const auth = getAuth();
-  const [listings, setListings] = useState(null);
+  const [listings, setListings] = useState([]);
   const [changeDetail, setChangeDetail] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -75,7 +75,6 @@ function Profile() {
     }
     fetchUserListings();
   }, [auth.currentUser.uid]);
-
   return (
     <>
       <section className="w-full flex flex-col items-center">
@@ -137,15 +136,15 @@ function Profile() {
           </button>
         </div>
       </section>
-      <div>
-        {listings && (
+      <div className="max-w-6xl px-3 mx-auto">
+        {listings.length >0 && (
           <>
             <h1
-              className="mt-[4rem] mb-12 text-3xl font-bold text-center text-gray-800"
+              className="mt-[4rem] mb-8 text-3xl font-bold text-center text-gray-800"
             >
               My Listings
             </h1> 
-            <ul>
+            <ul className="2xl:grid 2xl:grid-cols-4 lg:grid lg:grid-cols-3 md:grid md:grid-cols-2 xl:grid-cols-3 xs:grid xs:grid-cols-1 sm:grid-cols-2 mb-12 w-full">
               {listings.map((listing) => (
                 <ListingItem
                   key={listing.id}

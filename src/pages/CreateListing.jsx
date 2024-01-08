@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import { useNavigate } from "react-router";
+
 function CreateListing() {
   const navigate = useNavigate()
   const auth = getAuth();
@@ -24,7 +25,7 @@ function CreateListing() {
     address: "",
     description: "",
     offer: false,
-    cost: false,
+    costMonth: false,
     regularPrice: 0,
     discountedPrice: 0,
     images: {},
@@ -43,7 +44,7 @@ function CreateListing() {
     offer,
     regularPrice,
     discountedPrice,
-    cost,
+    costMonth,
     images,
     location,
   } = formData;
@@ -164,8 +165,6 @@ function CreateListing() {
     toast.success('Listing Added Successfully')
     navigate(`/category/${formDataCopy.type}/${docRef.id}`)
   };
-  
-
 
   if (loading) {
     return <Spinner />;
@@ -359,10 +358,10 @@ function CreateListing() {
               <button
                 onClick={onChangeHandler}
                 type="button"
-                id="cost"
+                id="costMonth"
                 value={true}
                 className={`px-7 py-3 font-semibold text-sm uppercase shadow-md rounded hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-150 ease-in-out w-full ${
-                  !cost ? "bg-white text-gray-700" : "bg-slate-600 text-white"
+                  !costMonth ? "bg-white text-gray-700" : "bg-slate-600 text-white"
                 }`}
               >
                 Month
@@ -370,10 +369,10 @@ function CreateListing() {
               <button
                 onClick={onChangeHandler}
                 type="button"
-                id="cost"
+                id="costMonth"
                 value={false}
                 className={`px-7 py-3 font-semibold text-sm uppercase shadow-md rounded hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-150 ease-in-out w-full ${
-                  cost ? "bg-white text-gray-700" : "bg-slate-600 text-white"
+                  costMonth ? "bg-white text-gray-700" : "bg-slate-600 text-white"
                 }`}
               >
                 Night
@@ -388,7 +387,7 @@ function CreateListing() {
               {offer ? "Regular" : ""} Price{" "}
               {type === "rent" && (
                 <span className="text-sm mt-6 font-normal text-gray-800">
-                  {cost ? " /Month" : " /Night"}
+                  {costMonth ? " /Month" : " /Night"}
                 </span>
               )}
             </p>
@@ -411,7 +410,7 @@ function CreateListing() {
                 Discounted Price
                 {type === "rent" && (
                 <span className="text-sm mt-6 font-normal text-gray-800">
-                  {cost ? " /Month" : " /Night"}
+                  {costMonth ? " /Month" : " /Night"}
                 </span>
               )}
               </p>
