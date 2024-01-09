@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import Spinner from "../components/Spinner";
 import { toast } from "react-toastify";
@@ -8,6 +9,8 @@ import { v4 as uuidv4 } from "uuid";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import { useNavigate } from "react-router";
+import Resizer from 'react-image-file-resizer';
+import {ImageCompressor} from "image-compressor";
 
 function CreateListing() {
   const navigate = useNavigate()
@@ -48,7 +51,150 @@ function CreateListing() {
     images,
     location,
   } = formData;
+  const [selectedImages, setSelectedImages] = useState([]);
 
+  /*const handleImageChange = async (event) => {
+    const files = event.target.files;
+
+    if (files && files.length > 0) {
+      // @ts-ignore
+      const compressedImages = await Promise.all(
+        Array.from(files).map(async (image, index) => {
+          const compressedImage = await compressAndResizeImage(image);
+          return {
+            0: dataURLtoFile(compressedImage, image.name),
+            length: index + 1,
+          };
+        })
+      );
+
+      // Now, you can upload the compressed images to Firebase Storage
+      setSelectedImages(compressedImages);
+      console.log(files)
+      const fineData = []
+      compressedImages.forEach((tempp)=>{
+        fineData.push(tempp[0])
+      })
+
+      console.log(fineData)
+      if (event.target.files) {
+        setFormData((prevState) => ({
+          ...prevState,
+          images: fineData,
+        }));
+      }
+    }
+  };
+
+  const compressAndResizeImage = async (imageFile) => {
+    return new Promise((resolve, reject) => {
+      Resizer.imageFileResizer(
+        imageFile,
+        1000, // Max width
+        1000, // Max height
+        'JPEG', // Output type
+        90, // Output quality
+        0, // Rotation (0 for no rotation)
+        async (uri) => {
+          try {
+            // @ts-ignore
+            const compressedImage = await new ImageCompressor(dataURLtoFile(uri, imageFile.name), {
+              quality: 0.8, // Compression quality (0 to 1)
+            });
+            resolve(compressedImage);
+          } catch (error) {
+            console.error('Error compressing image:', error.message);
+            reject(error);
+          }
+        },
+        'base64'
+      );
+    });
+  };*/
+
+  const handleImageChange = async (event) => {
+    const files = event.target.files;
+  
+    if (files && files.length > 0) {
+      const resizedImages = await Promise.all(
+        Array.from(files).map(async (image) => {
+          return await resizeImage(image);
+        })
+      );
+  
+      setSelectedImages(resizedImages);
+      if (event.target.files) {
+        setFormData((prevState) => ({
+          ...prevState,
+          images: resizedImages,
+        }));
+      }
+    }
+  };
+  
+  const resizeImage = async (imageFile) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+  
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+  
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+  
+          // Resize the image to a max width and max height
+          const maxWidth = 1000;
+          const maxHeight = 1000;
+          const compressionQuality = 0.8; // Set your desired compression quality (0 to 1)
+  
+          let width = img.width;
+          let height = img.height;
+  
+          if (width > height) {
+            if (width > maxWidth) {
+              height *= maxWidth / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width *= maxHeight / height;
+              height = maxHeight;
+            }
+          }
+  
+          canvas.width = width;
+          canvas.height = height;
+  
+          // Draw the image on the canvas after resizing
+          ctx.drawImage(img, 0, 0, width, height);
+  
+          // Convert the canvas content to a Blob with compression
+          canvas.toBlob(
+            (blob) => {
+              const resizedImage = new File([blob], imageFile.name, {
+                type: imageFile.type,
+              });
+              resolve(resizedImage);
+            },
+            imageFile.type, // Maintain the original image type
+            compressionQuality // Set the compression quality
+          );
+        };
+      };
+  
+      reader.onerror = (error) => {
+        console.error("Error reading image:", error);
+        reject(error);
+      };
+  
+      // Read the image file as a data URL
+      reader.readAsDataURL(imageFile);
+    });
+  };
+ 
+  
   function onChangeHandler(event) {
     let boolean = null;
     if (event.target.value === "true") {
@@ -58,10 +204,10 @@ function CreateListing() {
       boolean = false;
     }
     if (event.target.files) {
-      setFormData((prevState) => ({
-        ...prevState,
-        images: event.target.files,
-      }));
+        /* setFormData((prevState) => ({
+          ...prevState,
+          images: event.target.files,
+        })); */
     }
     if (!event.target.files) {
       setFormData((prevState) => ({
@@ -76,6 +222,7 @@ function CreateListing() {
       }));
     }
     if (local) {
+      console.log(local[0])
       setFormData((prevState) => ({
         ...prevState,
         location: local,
@@ -96,6 +243,36 @@ function CreateListing() {
       toast.warning("Maximum 6 images are allowed");
       return;
     }
+
+    /* async function storeImage(image) {
+      try {
+        const storage = getStorage();
+        const filename = `${auth.currentUser.uid}-${image.name}`;
+        const storageRef = ref(storage, filename);
+        
+        const uploadTask = uploadBytesResumable(storageRef, image);
+    
+        const downloadURL = await new Promise((resolve, reject) => {
+          uploadTask.on('state_changed',
+            (snapshot) => {/* ... *//* },
+            (error) => {
+              console.error('Error uploading image:', error);
+              reject(error);
+            },
+            () => {
+              getDownloadURL(uploadTask.snapshot.ref)
+                .then((url) => resolve(url))
+                .catch((error) => reject(error));
+            }
+          );
+        });
+    
+        return downloadURL || ''; // Return a default value if downloadURL is undefined
+      } catch (error) {
+        console.error('Error storing image:', error);
+        throw error; // Re-throw the error for further handling
+      }
+    } */
 
     async function storeImage(image){
       return new Promise((resolve, reject)=>{
@@ -138,13 +315,9 @@ function CreateListing() {
       })
       
     }
-
+    
     const imgUrls = await Promise.all(
-      [...images].map((image) => {
-        return storeImage(image)
-      }
-      )
-    ).catch((error) => {
+      [...images].map((image) => storeImage(image))).catch((error) => {
       setLoading(false);
       toast.error("Can't updload images!");
       return;
@@ -437,7 +610,7 @@ function CreateListing() {
             className="w-full rounded transition duration-150 ease-in-out bg-white p-2 text-gray-700 font-normal text-lg border border-gray-300 focus:bg-white focus:border-slate-600"
             id="images"
             type="file"
-            onChange={onChangeHandler}
+            onChange={handleImageChange}
             required
             multiple
             accept=".jpg, .jpeg, .png, .webp"
