@@ -2,11 +2,14 @@ import { getAuth, updateProfile } from "firebase/auth";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
-import { db } from "../firebase";
+import { db, storage } from "../firebase";
+import { deleteObject, ref } from 'firebase/storage';
+
 import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   orderBy,
   query,
@@ -75,22 +78,54 @@ function Profile() {
       setListings(listings);
     }
     fetchUserListings();
+
   }, [auth.currentUser.uid]);
 
   function onEdit(listingID){
     navigate(`/edit-listing/${listingID}`)
   }
-  async function onDelete(listingID){
-    if(window.confirm("Are you sure you want to delete this post")){
-      await deleteDoc(doc(db, 'listings', listingID));
-      const updatedListings = listings.filter(
-        (listing) => listing.id !== listingID
-      )
+  async function onDelete(listingID) {
+    if (window.confirm('Are you sure you want to delete this post')) {
+      // Get the listing document to retrieve the image paths
+      const listingRef = doc(db, 'listings', listingID);
+      const listingDoc = await getDoc(listingRef);
+      if (listingDoc.exists()) {
+        const imageData = listingDoc.data();
+  
+        // Check if 'imagePaths' field exists and is an array
+        if (imageData && Array.isArray(imageData.imgUrls)) {
+          const { imgUrls } = imageData;
+  
+          // Delete each image from Firebase Storage
+          const deleteImagePromises = imgUrls.map(async (imagePath) => {
+            const imageRef = ref(storage, imagePath);
+            try {
+              await deleteObject(imageRef);
+              console.log(`Image '${imagePath}' deleted successfully`);
+            } catch (error) {
+              console.error(`Error deleting image '${imagePath}':`, error);
+              // Handle error if needed
+            }
+          });
+  
+          // Wait for all image deletions to complete
+          await Promise.all(deleteImagePromises);
+        } else {
+          console.warn('imagePaths is not an array or is undefined');
+        }
+      }
+  
+      // Delete the document from Firestore
+      await deleteDoc(listingRef);
+  
+      // Update the React state (assuming you have 'listings' and 'setListings' in your component state)
+      const updatedListings = listings.filter((listing) => listing.id !== listingID);
       setListings(updatedListings);
-      toast.success("Listing deleted")
+  
+      // Display a success message
+      toast.success('Listing and associated images deleted');
     }
   }
-
   return (
     <>
       <section className="w-full flex flex-col items-center">

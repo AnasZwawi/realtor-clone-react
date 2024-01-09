@@ -67,7 +67,7 @@ function ListingItem({ listing, id, onDelete, onEdit }) {
         {onDelete && (
           <FaTrash
             className="text-red-600 cursor-pointer"
-            onClick={() => onDelete(listing.id)}
+            onClick={() => onDelete(listing.id, listing.imgUrls)}
           />
         )}
       </div>

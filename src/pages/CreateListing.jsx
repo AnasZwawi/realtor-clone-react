@@ -2,19 +2,26 @@ import React, { useState } from "react";
 import Spinner from "../components/Spinner";
 import { toast } from "react-toastify";
 import Location from "../components/Location";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { getAuth } from 'firebase/auth';
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
+import { getAuth } from "firebase/auth";
 import { v4 as uuidv4 } from "uuid";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import { useNavigate } from "react-router";
+import CompressionIndicator from "../components/CompressionIndicator";
 
 function CreateListing() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const auth = getAuth();
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [local, setLocal] = useState({});
+  const [compressing, setCompressing] = useState(false);
   const [formData, setFormData] = useState({
     type: "rent",
     name: "",
@@ -52,8 +59,9 @@ function CreateListing() {
 
   const handleImageChange = async (event) => {
     const files = event.target.files;
-  
+
     if (files && files.length > 0) {
+      setCompressing(true);
       const resizedImages = await Promise.all(
         Array.from(files).map(async (image) => {
           return await resizeImage(image);
@@ -68,31 +76,29 @@ function CreateListing() {
         }));
       }
     }
-    
+    setCompressing(false);
   };
-  
+
   const resizeImage = async (imageFile) => {
-    
     return new Promise((resolve, reject) => {
-      
       const reader = new FileReader();
-  
+
       reader.onload = (event) => {
         const img = new Image();
         img.src = event.target.result;
-  
+
         img.onload = () => {
           const canvas = document.createElement("canvas");
           const ctx = canvas.getContext("2d");
-  
+
           // Resize the image to a max width and max height
           const maxWidth = 1000;
           const maxHeight = 1000;
-          const compressionQuality = 0.8;// (0 to 1)
-  
+          const compressionQuality = 0.8; // (0 to 1)
+
           let width = img.width;
           let height = img.height;
-  
+
           if (width > height) {
             if (width > maxWidth) {
               height *= maxWidth / width;
@@ -104,13 +110,13 @@ function CreateListing() {
               height = maxHeight;
             }
           }
-  
+
           canvas.width = width;
           canvas.height = height;
-  
+
           // Draw the image on the canvas after resizing
           ctx.drawImage(img, 0, 0, width, height);
-  
+
           // Convert the canvas content to a Blob with compression
           canvas.toBlob(
             (blob) => {
@@ -124,18 +130,17 @@ function CreateListing() {
           );
         };
       };
-  
+
       reader.onerror = (error) => {
         console.error("Error reading image:", error);
         reject(error);
       };
-  
+
       // Read the image file as a data URL
       reader.readAsDataURL(imageFile);
-      
     });
   };
- 
+
   function onChangeHandler(event) {
     let boolean = null;
     if (event.target.value === "true") {
@@ -145,7 +150,6 @@ function CreateListing() {
       boolean = false;
     }
     if (event.target.files) {
-      
     }
     if (!event.target.files) {
       setFormData((prevState) => ({
@@ -153,7 +157,7 @@ function CreateListing() {
         [event.target.id]: boolean ?? event.target.value,
       }));
     }
-    if(event.target.type === "number"){
+    if (event.target.type === "number") {
       setFormData((prevState) => ({
         ...prevState,
         [event.target.id]: event.target.valueAsNumber,
@@ -167,7 +171,7 @@ function CreateListing() {
     }
   }
 
-  const onSubmitHandler = async(e) => {
+  const onSubmitHandler = async (e) => {
     e.preventDefault();
     setLoading(true);
     if (discountedPrice >= regularPrice) {
@@ -181,31 +185,33 @@ function CreateListing() {
       return;
     }
 
-    async function storeImage(image){
-      return new Promise((resolve, reject)=>{
+    async function storeImage(image) {
+      return new Promise((resolve, reject) => {
         const storage = getStorage();
-        const filename = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`
+        const filename = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`;
         const storageRef = ref(storage, filename);
-        
+
         const uploadTask = uploadBytesResumable(storageRef, image);
-      
-        uploadTask.on('state_changed', 
+
+        uploadTask.on(
+          "state_changed",
           (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            console.log('Upload is ' + progress.toFixed(0) + '% done');
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log("Upload is " + progress.toFixed(0) + "% done");
             switch (snapshot.state) {
-              case 'paused':
-                console.log('Upload is paused');
+              case "paused":
+                console.log("Upload is paused");
                 break;
-              case 'running':
-                console.log('Upload is running');
+              case "running":
+                console.log("Upload is running");
                 break;
             }
-          }, 
+          },
           (error) => {
             // Handle unsuccessful uploads
-            reject(error)
-          }, 
+            reject(error);
+          },
           () => {
             // Handle successful uploads on complete
             getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
@@ -213,31 +219,31 @@ function CreateListing() {
             });
           }
         );
-      })
-      
+      });
     }
-    
+
     const imgUrls = await Promise.all(
-      [...images].map((image) => storeImage(image))).catch((error) => {
+      [...images].map((image) => storeImage(image))
+    ).catch((error) => {
       setLoading(false);
       toast.error("Can't updload images!");
       return;
-    })
- 
+    });
+
     const formDataCopy = {
       ...formData,
       imgUrls,
       timestamp: serverTimestamp(),
-      houseLocation : location[0],
+      houseLocation: location[0],
       userRef: auth.currentUser.uid,
-    }
-    delete formDataCopy.images
-    delete formDataCopy.location
-    !formDataCopy.offer && delete formDataCopy.discountedPrice
-    const docRef = await addDoc(collection(db, 'listings'), formDataCopy);
-    setLoading(false)
-    toast.success('Listing Added Successfully')
-    navigate(`/category/${formDataCopy.type}/${docRef.id}`)
+    };
+    delete formDataCopy.images;
+    delete formDataCopy.location;
+    !formDataCopy.offer && delete formDataCopy.discountedPrice;
+    const docRef = await addDoc(collection(db, "listings"), formDataCopy);
+    setLoading(false);
+    toast.success("Listing Added Successfully");
+    navigate(`/category/${formDataCopy.type}/${docRef.id}`);
   };
 
   if (loading) {
@@ -450,7 +456,9 @@ function CreateListing() {
                 id="costMonth"
                 value={true}
                 className={`px-7 py-3 font-semibold text-sm uppercase shadow-md rounded hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-150 ease-in-out w-full ${
-                  !costMonth ? "bg-white text-gray-700" : "bg-slate-600 text-white"
+                  !costMonth
+                    ? "bg-white text-gray-700"
+                    : "bg-slate-600 text-white"
                 }`}
               >
                 Month
@@ -461,7 +469,9 @@ function CreateListing() {
                 id="costMonth"
                 value={false}
                 className={`px-7 py-3 font-semibold text-sm uppercase shadow-md rounded hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-150 ease-in-out w-full ${
-                  costMonth ? "bg-white text-gray-700" : "bg-slate-600 text-white"
+                  costMonth
+                    ? "bg-white text-gray-700"
+                    : "bg-slate-600 text-white"
                 }`}
               >
                 Night
@@ -498,10 +508,10 @@ function CreateListing() {
               <p className="text-lg mt-6 font-semibold text-gray-800">
                 Discounted Price
                 {type === "rent" && (
-                <span className="text-sm mt-6 font-normal text-gray-800">
-                  {costMonth ? " /Month" : " /Night"}
-                </span>
-              )}
+                  <span className="text-sm mt-6 font-normal text-gray-800">
+                    {costMonth ? " /Month" : " /Night"}
+                  </span>
+                )}
               </p>
               <div className="relative">
                 <p className="absolute z-50 top-3 right-8">TND</p>
@@ -523,6 +533,11 @@ function CreateListing() {
         >
           CREATE LISTING
         </button>
+        {compressing && 
+        <div className="bg-white bg-opacity-50 flex items-center justify-center right-0 left-0 bottom-0 top-0 z-50 fixed">
+          <CompressionIndicator/>
+        </div>
+        }
       </form>
     </main>
   );
