@@ -59,7 +59,7 @@ function CreateListing() {
           return await resizeImage(image);
         })
       );
-  
+
       setSelectedImages(resizedImages);
       if (event.target.files) {
         setFormData((prevState) => ({
@@ -68,10 +68,13 @@ function CreateListing() {
         }));
       }
     }
+    
   };
   
   const resizeImage = async (imageFile) => {
+    
     return new Promise((resolve, reject) => {
+      
       const reader = new FileReader();
   
       reader.onload = (event) => {
@@ -129,6 +132,7 @@ function CreateListing() {
   
       // Read the image file as a data URL
       reader.readAsDataURL(imageFile);
+      
     });
   };
  
@@ -279,6 +283,21 @@ function CreateListing() {
           >
             rent
           </button>
+        </div>
+        <div>
+          <p className="text-lg mt-6 font-semibold text-gray-800">Images </p>
+          <p className="text-sm font-normal text-gray-600">
+            The first image will be the cover (max 6).{" "}
+          </p>
+          <input
+            className="w-full rounded transition duration-150 ease-in-out bg-white p-2 text-gray-700 font-normal text-lg border border-gray-300 focus:bg-white focus:border-slate-600"
+            id="images"
+            type="file"
+            onChange={handleImageChange}
+            required
+            multiple
+            accept=".jpg, .jpeg, .png, .webp"
+          />
         </div>
         <p className="text-lg mt-6 font-semibold text-gray-800">Title</p>
         <input
@@ -475,7 +494,7 @@ function CreateListing() {
             </div>
           </div>
           {offer && (
-            <div className="w-full">
+            <div className="w-full mb-4">
               <p className="text-lg mt-6 font-semibold text-gray-800">
                 Discounted Price
                 {type === "rent" && (
@@ -497,21 +516,6 @@ function CreateListing() {
               </div>
             </div>
           )}
-        </div>
-        <div>
-          <p className="text-lg mt-6 font-semibold text-gray-800">Images </p>
-          <p className="text-sm font-normal text-gray-600">
-            The first image will be the cover (max 6).{" "}
-          </p>
-          <input
-            className="w-full rounded transition duration-150 ease-in-out bg-white p-2 text-gray-700 font-normal text-lg border border-gray-300 focus:bg-white focus:border-slate-600"
-            id="images"
-            type="file"
-            onChange={handleImageChange}
-            required
-            multiple
-            accept=".jpg, .jpeg, .png, .webp"
-          />
         </div>
         <button
           type="submit"
