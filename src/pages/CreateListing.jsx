@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState } from "react";
 import Spinner from "../components/Spinner";
 import { toast } from "react-toastify";
@@ -9,8 +8,6 @@ import { v4 as uuidv4 } from "uuid";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import { useNavigate } from "react-router";
-import Resizer from 'react-image-file-resizer';
-import {ImageCompressor} from "image-compressor";
 
 function CreateListing() {
   const navigate = useNavigate()
@@ -52,65 +49,6 @@ function CreateListing() {
     location,
   } = formData;
   const [selectedImages, setSelectedImages] = useState([]);
-
-  /*const handleImageChange = async (event) => {
-    const files = event.target.files;
-
-    if (files && files.length > 0) {
-      // @ts-ignore
-      const compressedImages = await Promise.all(
-        Array.from(files).map(async (image, index) => {
-          const compressedImage = await compressAndResizeImage(image);
-          return {
-            0: dataURLtoFile(compressedImage, image.name),
-            length: index + 1,
-          };
-        })
-      );
-
-      // Now, you can upload the compressed images to Firebase Storage
-      setSelectedImages(compressedImages);
-      console.log(files)
-      const fineData = []
-      compressedImages.forEach((tempp)=>{
-        fineData.push(tempp[0])
-      })
-
-      console.log(fineData)
-      if (event.target.files) {
-        setFormData((prevState) => ({
-          ...prevState,
-          images: fineData,
-        }));
-      }
-    }
-  };
-
-  const compressAndResizeImage = async (imageFile) => {
-    return new Promise((resolve, reject) => {
-      Resizer.imageFileResizer(
-        imageFile,
-        1000, // Max width
-        1000, // Max height
-        'JPEG', // Output type
-        90, // Output quality
-        0, // Rotation (0 for no rotation)
-        async (uri) => {
-          try {
-            // @ts-ignore
-            const compressedImage = await new ImageCompressor(dataURLtoFile(uri, imageFile.name), {
-              quality: 0.8, // Compression quality (0 to 1)
-            });
-            resolve(compressedImage);
-          } catch (error) {
-            console.error('Error compressing image:', error.message);
-            reject(error);
-          }
-        },
-        'base64'
-      );
-    });
-  };*/
 
   const handleImageChange = async (event) => {
     const files = event.target.files;
@@ -244,36 +182,6 @@ function CreateListing() {
       return;
     }
 
-    /* async function storeImage(image) {
-      try {
-        const storage = getStorage();
-        const filename = `${auth.currentUser.uid}-${image.name}`;
-        const storageRef = ref(storage, filename);
-        
-        const uploadTask = uploadBytesResumable(storageRef, image);
-    
-        const downloadURL = await new Promise((resolve, reject) => {
-          uploadTask.on('state_changed',
-            (snapshot) => {/* ... *//* },
-            (error) => {
-              console.error('Error uploading image:', error);
-              reject(error);
-            },
-            () => {
-              getDownloadURL(uploadTask.snapshot.ref)
-                .then((url) => resolve(url))
-                .catch((error) => reject(error));
-            }
-          );
-        });
-    
-        return downloadURL || ''; // Return a default value if downloadURL is undefined
-      } catch (error) {
-        console.error('Error storing image:', error);
-        throw error; // Re-throw the error for further handling
-      }
-    } */
-
     async function storeImage(image){
       return new Promise((resolve, reject)=>{
         const storage = getStorage();
@@ -281,15 +189,9 @@ function CreateListing() {
         const storageRef = ref(storage, filename);
         
         const uploadTask = uploadBytesResumable(storageRef, image);
-        
-        // Register three observers:
-        // 1. 'state_changed' observer, called any time the state changes
-        // 2. Error observer, called on failure
-        // 3. Completion observer, called on successful completion
+      
         uploadTask.on('state_changed', 
           (snapshot) => {
-            // Observe state change events such as progress, pause, and resume
-            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             console.log('Upload is ' + progress.toFixed(0) + '% done');
             switch (snapshot.state) {
