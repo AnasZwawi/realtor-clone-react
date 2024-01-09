@@ -85,7 +85,7 @@ function CreateListing() {
           // Resize the image to a max width and max height
           const maxWidth = 1000;
           const maxHeight = 1000;
-          const compressionQuality = 0.8; // Set your desired compression quality (0 to 1)
+          const compressionQuality = 0.8;// (0 to 1)
   
           let width = img.width;
           let height = img.height;
@@ -132,7 +132,6 @@ function CreateListing() {
     });
   };
  
-  
   function onChangeHandler(event) {
     let boolean = null;
     if (event.target.value === "true") {
@@ -142,10 +141,7 @@ function CreateListing() {
       boolean = false;
     }
     if (event.target.files) {
-        /* setFormData((prevState) => ({
-          ...prevState,
-          images: event.target.files,
-        })); */
+      
     }
     if (!event.target.files) {
       setFormData((prevState) => ({
@@ -160,7 +156,6 @@ function CreateListing() {
       }));
     }
     if (local) {
-      console.log(local[0])
       setFormData((prevState) => ({
         ...prevState,
         location: local,
