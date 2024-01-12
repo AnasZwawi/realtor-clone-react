@@ -1,0 +1,24 @@
+.shapes {
+  width: 25px;
+  height: 25px;
+  position: relative;
+  right: 7px;
+  color: rgb(71, 85, 105);
+  background: conic-gradient(from  -45deg at top    16px left 50% ,#0000 ,currentColor 1deg 90deg,#0000 91deg),
+         conic-gradient(from   45deg at right  16px top  50% ,#0000 ,currentColor 1deg 90deg,#0000 91deg),
+         conic-gradient(from  135deg at bottom 16px left 50% ,#0000 ,currentColor 1deg 90deg,#0000 91deg),
+         conic-gradient(from -135deg at left   16px top  50% ,#0000 ,currentColor 1deg 90deg,#0000 91deg);
+  animation: shapes-q299i1md 1.5s infinite cubic-bezier(0.3,1,0,1);
+}
+
+@keyframes shapes-q299i1md {
+  50% {
+     width: 40px;
+     height: 40px;
+     transform: rotate(180deg);
+  }
+
+  100% {
+     transform: rotate(360deg);
+  }
+}
